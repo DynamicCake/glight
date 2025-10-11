@@ -329,11 +329,11 @@ format_level(Level, Config) ->
   end.
 
 format_datastring(K, V, IsColor) when is_list(K), is_list(V) ->
-  dim(io_lib:format("\n\t\t\t\t\t||- ~s: ~s", [K, V]), IsColor);
+  dim(io_lib:format("\n\t\t\t    ||- ~s: ~s", [K, V]), IsColor);
 format_datastring(K, V, IsColor) when is_binary(K), is_binary(V) ->
-  dim(io_lib:format("\n\t\t\t\t\t||- ~s: ~s", [K, V]), IsColor);
+  dim(io_lib:format("\n\t\t\t    ||- ~s: ~s", [K, V]), IsColor);
 format_datastring(K, V, IsColor) ->
-  dim(io_lib:format("\n\t\t\t\t\t||- ~p: ~p", [K, V]), IsColor).
+  dim(io_lib:format("\n\t\t\t    ||- ~p: ~p", [K, V]), IsColor).
 
 bold(Str, IsColor) when is_binary(Str) ->
   case IsColor of
@@ -417,7 +417,12 @@ bright_red(Str, IsColor) ->
 timestamp(Event) ->
   Meta = maps:get(meta, Event, #{}),
   TimeMicros = maps:get(time, Meta, erlang:system_time(microsecond)),
-  calendar:system_time_to_rfc3339(TimeMicros, [{unit, microsecond}]).
+    {{Year, Month, Day}, {Hour, Min, Sec}} = 
+    calendar:system_time_to_local_time(TimeMicros, microsecond),
+    % Format as: 2025-10-11 01:18:16
+    io_lib:format("~4..0B-~2..0B-~2..0B ~2..0B:~2..0B:~2..0B", 
+                  [Year, Month, Day, Hour, Min, Sec]).
+
 
 timestamp_json(Timestamp) ->
   list_to_binary(lists:flatten(Timestamp)).
