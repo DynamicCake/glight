@@ -271,7 +271,7 @@ format_pretty_multiline(Map0, IsColor) when is_map(Map0) ->
     {Msg, Rest} ->
       PrettyLines =
         lists:map(fun({K, V}) -> format_datastring(K, V, IsColor) end, maps:to_list(Rest)),
-      [Msg | PrettyLines];
+      [bold(Msg, IsColor) | PrettyLines];
     error ->
       format_pretty_kv(Map0, IsColor)
   end;
@@ -279,7 +279,7 @@ format_pretty_multiline(PropList, IsColor) when is_list(PropList) ->
   case lists:keytake(<<"msg">>, 1, PropList) of
     {value, {_, Msg}, Rest} ->
       PrettyLines = lists:map(fun({K, V}) -> format_datastring(K, V, IsColor) end, Rest),
-      [Msg | PrettyLines];
+      [bold(Msg, IsColor) | PrettyLines];
     false ->
       format_pretty_kv(PropList, IsColor)
   end;
@@ -328,12 +328,27 @@ format_level(Level, Config) ->
       " " ++ bright_red("[EMRG]", IsColor) ++ " "
   end.
 
-format_datastring(K, V, IsColor) when is_list(K), is_list(V) ->
-  gray(io_lib:format("\n\t\t\t\t\t| ~s: ~s", [K, V]), IsColor);
-format_datastring(K, V, IsColor) when is_binary(K), is_binary(V) ->
-  gray(io_lib:format("\n\t\t\t\t\t| ~s: ~s", [K, V]), IsColor);
-format_datastring(K, V, IsColor) ->
-  gray(io_lib:format("\n\t\t\t\t\t| ~p: ~p", [K, V]), IsColor).
+format_datastring(K, V, _IsColor) when is_list(K), is_list(V) ->
+  io_lib:format("\n\t\t\t\t\t| ~s: ~s", [K, V]);
+format_datastring(K, V, _IsColor) when is_binary(K), is_binary(V) ->
+  io_lib:format("\n\t\t\t\t\t| ~s: ~s", [K, V]);
+format_datastring(K, V, _IsColor) ->
+  io_lib:format("\n\t\t\t\t\t| ~p: ~p", [K, V]).
+
+bold(Str, IsColor) when is_binary(Str) ->
+  case IsColor of
+    true ->
+      ["\x1b[1m", Str, "\x1b[0m"];
+    false ->
+      Str
+  end;
+bold(Str, IsColor) ->
+  case IsColor of
+    true ->
+      io_lib:format("\x1b[1m~s\x1b[0m", [Str]);
+    false ->
+      Str
+  end.
 
 gray(Str, IsColor) ->
   case IsColor of
@@ -400,10 +415,12 @@ timestamp_json(Timestamp) ->
   list_to_binary(lists:flatten(Timestamp)).
 
 ensure_string(Value) when is_binary(Value) ->
-  binary_to_list(Value);
+  [Value];
+ensure_string(Value) when is_list(Value) ->
+  [Value];
 ensure_string(Value) when is_atom(Value) ->
-  atom_to_list(Value);
+  [atom_to_list(Value)];
 ensure_string(Value) when is_integer(Value) ->
-  integer_to_list(Value);
+  [integer_to_list(Value)];
 ensure_string(Value) ->
-  io_lib:format("~s", [Value]).
+  [io_lib:format("~p", [Value])].
