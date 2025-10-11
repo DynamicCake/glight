@@ -328,12 +328,12 @@ format_level(Level, Config) ->
       " " ++ bright_red("[EMRG]", IsColor) ++ " "
   end.
 
-format_datastring(K, V, _IsColor) when is_list(K), is_list(V) ->
-  io_lib:format("\n\t\t\t\t\t| ~s: ~s", [K, V]);
-format_datastring(K, V, _IsColor) when is_binary(K), is_binary(V) ->
-  io_lib:format("\n\t\t\t\t\t| ~s: ~s", [K, V]);
-format_datastring(K, V, _IsColor) ->
-  io_lib:format("\n\t\t\t\t\t| ~p: ~p", [K, V]).
+format_datastring(K, V, IsColor) when is_list(K), is_list(V) ->
+  dim(io_lib:format("\n\t\t\t\t\t||- ~s: ~s", [K, V]), IsColor);
+format_datastring(K, V, IsColor) when is_binary(K), is_binary(V) ->
+  dim(io_lib:format("\n\t\t\t\t\t||- ~s: ~s", [K, V]), IsColor);
+format_datastring(K, V, IsColor) ->
+  dim(io_lib:format("\n\t\t\t\t\t||- ~p: ~p", [K, V]), IsColor).
 
 bold(Str, IsColor) when is_binary(Str) ->
   case IsColor of
@@ -346,6 +346,14 @@ bold(Str, IsColor) ->
   case IsColor of
     true ->
       io_lib:format("\x1b[1m~s\x1b[0m", [Str]);
+    false ->
+      Str
+  end.
+
+dim(Str, IsColor) ->
+  case IsColor of
+    true ->
+      io_lib:format("\x1b[2m~s\x1b[0m", [Str]);
     false ->
       Str
   end.
@@ -424,3 +432,4 @@ ensure_string(Value) when is_integer(Value) ->
   [integer_to_list(Value)];
 ensure_string(Value) ->
   [io_lib:format("~p", [Value])].
+

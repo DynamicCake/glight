@@ -62,7 +62,7 @@ pub fn main() {
   |> with("it's catchy", "you like it")
   |> emergency("this is the hook.")
 
-  logging.log(logging.Debug, "we can also log from the logging moduel")
+  logging.log(logging.Debug, "we can also log from the logging module")
   logging.log(
     logging.Info,
     "anything that uses erlang logger gets our tasty config",
