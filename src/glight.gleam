@@ -13,6 +13,7 @@ pub type LogLevel {
 
 pub type Transport {
   Console
+  ConsoleJson
   File(String)
 }
 

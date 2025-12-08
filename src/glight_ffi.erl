@@ -27,6 +27,20 @@ add_transport(console) ->
                      #{level => Level,
                        filters => get_filters(),
                        formatter => {glight_ffi, #{is_color => true, target => console}}});
+add_transport(console_json) ->
+  Id = make_handler_id(console_json),
+  Config = logger:get_config(),
+  Level = maps:get(level, maps:get(primary, Config)),
+  logger:add_handler(Id,
+                     logger_std_h,
+                     #{level => Level,
+                       filters => get_filters(),
+                       formatter =>
+                         {glight_ffi,
+                          #{target => file,  % Reuse file target for JSON formatting
+                            json_time_key => <<"time">>,
+                            json_msg_key => <<"msg">>,
+                            json_level_key => <<"level">>}}});
 add_transport({file, Path}) ->
   Id = make_handler_id({file, Path}),
   Config = logger:get_config(),
@@ -51,6 +65,10 @@ get_filters() ->
 make_handler_id(console) ->
   list_to_atom(?GLIGHT_PREFIX
                ++ ?CONSOLE_PREFIX
+               ++ integer_to_list(erlang:unique_integer()));
+make_handler_id(console_json) ->
+  list_to_atom(?GLIGHT_PREFIX
+               ++ "console_json_"
                ++ integer_to_list(erlang:unique_integer()));
 make_handler_id({file, Path}) ->
   list_to_atom(?GLIGHT_PREFIX ++ ?FILE_PREFIX ++ integer_to_list(erlang:phash2(Path))).
